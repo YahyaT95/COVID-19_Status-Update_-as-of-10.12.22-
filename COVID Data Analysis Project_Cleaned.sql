@@ -76,7 +76,6 @@ From covid_analysis..coviddeaths
 --Code:
 --Create View maxinfectionratebycountry as
 SELECT location, population, MAX(total_cases) as highest_infect_ct,  MAX((total_cases/population))*100 AS max_percent_pop_infected
---, MIN(total_cases) as lowest_infect_ct, MIN((total_cases/population))*100 AS min_percent_pop_infected
 From covid_analysis..coviddeaths
 WHERE continent IS NOT NULL -- to provide only countries
 Group by location, population
