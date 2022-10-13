@@ -5,7 +5,7 @@
 -- =============================================
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Below provide a quick detailed view of the 3 tables used
+-- Below provides a quick detailed view of the 3 tables used
 
 USE covid_analysis;
 --Table 1 on Deaths
