@@ -47,15 +47,16 @@ ORDER BY 3 ,4
 --Create View deathlikelihoodbycountry as
 
 SELECT dth.continent, dth.location, dth.date, dth.total_cases, dth.total_deaths
-,oth.[stringency_index] , oth.[median_age] ,oth.[aged_65_older] , oth.[aged_70_older], oth.[gdp_per_capita],oth.[extreme_poverty],oth.[population],oth.[population_density]
+,oth.[stringency_index] , oth.[median_age] ,oth.[aged_65_older] , oth.[aged_70_older], oth.[gdp_per_capita]
+,oth.[extreme_poverty],oth.[population],oth.[population_density]
 ,(dth.total_deaths/dth.total_cases)*100 AS deathpercentage
 From covid_analysis..coviddeaths dth
 JOIN covid_analysis..covid_all_other oth
 	ON dth.location = oth.location 
-	and dth.date = oth.date
+	AND dth.date = oth.date
 WHERE dth.continent is not null
---Where location like '%states' 
---order by 1, 2
+--WHERE location like '%states' 
+--ORDER BY 1, 2
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -64,10 +65,12 @@ WHERE dth.continent is not null
 
 --Code:
 --CREATE VIEW deaths_aspctof_pop AS
-SELECT continent, location, date, population, total_cases,  (total_cases/population)*100 AS percent_pop_infected, (total_deaths/population)*100 AS covid_deaths_pctofpop
-From covid_analysis..coviddeaths
---Where location like '%states' 
---order by 1, 2
+SELECT continent, location, date, population, total_cases
+, (total_cases/population)*100 AS percent_pop_infected
+, (total_deaths/population)*100 AS covid_deaths_pctofpop
+FROM covid_analysis..coviddeaths
+--WHERE location LIKE '%states' -- for examining the US specifically
+--ORDER BY 1, 2
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -75,11 +78,11 @@ From covid_analysis..coviddeaths
 
 --Code:
 --Create View maxinfectionratebycountry as
-SELECT location, population, MAX(total_cases) as highest_infect_ct,  MAX((total_cases/population))*100 AS max_percent_pop_infected
-From covid_analysis..coviddeaths
+SELECT location, population, MAX(total_cases) AS highest_infect_ct,  MAX((total_cases/population))*100 AS max_percent_pop_infected
+FROM covid_analysis..coviddeaths
 WHERE continent IS NOT NULL -- to provide only countries
 Group by location, population
---order by 4 DESC
+--ORDER BY 4 DESC
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -88,11 +91,11 @@ Group by location, population
 
 --Code:
 
-SELECT location, population, MAX(cast(total_deaths as int)) as highest_death_ct, MAX((cast(total_deaths as int)/population))*100 AS max_percent_pop_dead
-From covid_analysis..coviddeaths
+SELECT location, population, MAX(cast(total_deaths AS int)) AS highest_death_ct, MAX((cast(total_deaths AS int)/population))*100 AS max_percent_pop_dead
+FROM covid_analysis..coviddeaths
 WHERE continent IS NOT NULL
-Group by location, population
-order by 4 DESC 
+GROUP BY location, population
+ORDER BY 4 DESC 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -100,73 +103,73 @@ order by 4 DESC
 
 -- Code:
 -- Create View maxdeathpct_reached_by_country as
-SELECT location, MAX(cast(total_deaths as int)) as Total_Death_ct, MAX((cast(total_deaths as int)/population))*100 AS maxDead_as_percent_ofPop
+SELECT location, MAX(cast(total_deaths AS int)) AS Total_Death_ct, MAX((cast(total_deaths AS int)/population))*100 AS maxDead_as_percent_ofPop
 FROM covid_analysis..coviddeaths
-WHERE continent is null AND location not like '%income' AND location not like 'International' 
+WHERE continent IS NULL AND location NOT LIKE '%income' AND location NOT LIKE 'International' 
 GROUP BY location
-ORDER BY Total_Death_ct desc
+ORDER BY Total_Death_ct DESC
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Global numbers on total deaths, total cases, and deaths as a perc of cases
 
 --Code:
 --CREATE VIEW global_tot as
-Select SUM(new_cases) as  total_cases, SUM(cast(new_deaths as bigint)) as total_deaths, SUM(cast(new_deaths AS int))/SUM(new_cases)*100 AS death_percentof_cases
-From covid_analysis..coviddeaths
-Where continent is not null 
+Select SUM(new_cases) AS  total_cases, SUM(cast(new_deaths AS bigint)) AS total_deaths, SUM(cast(new_deaths AS int))/SUM(new_cases)*100 AS death_percentof_cases
+FROM covid_analysis..coviddeaths
+WHERE continent IS NOT null 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Death rates grouped by country income levels 
 
 --Code:
 --CREATE VIEW income_lvl_deaths as
-SELECT location,population, SUM(new_cases) as  total_cases, SUM(cast(new_deaths as bigint)) as total_deaths, SUM(cast(new_deaths AS int))/SUM(new_cases)*100 AS death_percentof_cases
-from covid_analysis..coviddeaths
-WHERE continent is null AND location  like '%income'
-Group BY continent,location, population
-order by death_percentof_cases desc
+SELECT location,population, SUM(new_cases) AS  total_cases, SUM(cast(new_deaths as bigint)) as total_deaths, SUM(cast(new_deaths AS int))/SUM(new_cases)*100 AS death_percentof_cases
+FROM covid_analysis..coviddeaths
+WHERE continent IS NULL AND location  LIKE '%income'
+GROUP BY continent,location, population
+ORDER BY death_percentof_cases desc
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Examining cases and deaths based on avg stringency levels of countries since the pandemic began
 
 --Code:
 --CREATE View stingency_lvls as
-SELECT  location, population, AVG([stringency_index]) as avg_string,SUM(new_cases) as  total_cases, SUM(cast(new_deaths as bigint)) as total_deaths--, SUM(cast(new_deaths AS int))/SUM(new_cases)*100 AS death_percentof_cases
-from covid_analysis..covid_all_other
-WHERE continent is not null AND location not like '%income' AND location not like 'International' 
---WHERE continent is null AND location  like '%income'
-Group BY location, population
-order by avg_string DESC
+SELECT  location, population, AVG([stringency_index]) AS avg_string,SUM(new_cases) AS  total_cases, SUM(cast(new_deaths AS bigint)) AS total_deaths
+FROM covid_analysis..covid_all_other
+WHERE continent IS NOT null AND location NOT LIKE '%income' AND location NOT LIKE 'International' 
+--WHERE continent IS NULL AND location  LIKE '%income'
+GROUP BY location, population
+ORDER BY avg_string DESC
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --USE CTE Table to create rolling sum and percentage of people vaccinated 
 
 --Rolling sum of first time vaccinations for nations willingness to vaccinate
 Select dth.[continent], dth.[location], dth.[date], dth.population, vcn.[new_vaccinations]
-, SUM(convert(bigint, vcn.[new_vaccinations])) OVER (Partition BY dth.location order by dth.location, dth.date) as Vcn_rolling_sum
-From covid_analysis..coviddeaths dth	
+, SUM(convert(bigint, vcn.[new_vaccinations])) OVER (Partition BY dth.location order by dth.location, dth.date) AS Vcn_rolling_sum
+FROM covid_analysis..coviddeaths dth	
 JOIN covid_analysis..covidvaccinations vcn
 	ON dth.location = vcn.location 
 	and dth.date = vcn.date
-WHERE dth.continent is not null
-Order by 2,3
+WHERE dth.continent IS NOT null
+ORDER BY 2,3
 
 --USE CTE
 --CREATE View rolling_vaccinations as
 WITH PopVacTable (continent, location, date, population, new_vaccinations,vcn_rolling_sum)
-as 
+AS 
 (
 select dth.continent, dth.location, dth.date, dth.population, vcn.new_people_vaccinated_smoothed
 , SUM(CONVERT(bigint, vcn.new_people_vaccinated_smoothed)) OVER (partition by dth.location order by dth.location, dth.date) as vcn_rolling_sum
-From covid_analysis..coviddeaths dth
+FROM covid_analysis..coviddeaths dth
 JOIN covid_analysis..covidvaccinations vcn
 	ON dth.location =vcn.location
-	and dth.date = vcn.date
---where dth.continent is not null 
+	AND dth.date = vcn.date
+--WHERE dth.continent is not null 
 )
 
 SELECT *, (vcn_rolling_sum/population)*100 as rolling_pcnt_ofvcn
-From PopVacTable
+FROM PopVacTable
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- USE TEMP Table to create rolling sum and percentage of people vaccinated  Note: the variable used is new_people_vaccinated_smoothed to show Daily number of people receiving their first vaccine dose (7-day smoothed)
@@ -182,24 +185,24 @@ new_vaccinations numeric,
 rollingsumvcn numeric
 )
 
-Insert Into #PercentPopVacinated
-select dth.continent, dth.location, dth.date, dth.population, vcn.new_people_vaccinated_smoothed
+INSERT INTO #PercentPopVacinated
+SELECT dth.continent, dth.location, dth.date, dth.population, vcn.new_people_vaccinated_smoothed
 , SUM(CONVERT(bigint, vcn.new_people_vaccinated_smoothed)) OVER (partition by dth.location order by dth.location, dth.date) as rollingsumvcn
-From covid_analysis..coviddeaths dth
+FROM covid_analysis..coviddeaths dth
 JOIN covid_analysis..covidvaccinations vcn
 	ON dth.location =vcn.location
 	and dth.date = vcn.date
-where dth.continent is not null 
+WHERE dth.continent IS NOT null 
 
-SELECT *, (rollingsumvcn/population)*100 as rolliing_pctof_popvacinated
+SELECT *, (rollingsumvcn/population)*100 AS rolliing_pctof_popvacinated
 FROM #PercentPopVacinated
 
 
 SELECT dth.continent, dth.location, dth.date, dth.population, CONVERT(BIGINT,vcn.people_fully_vaccinated) as fully_vac,(CONVERT(BIGINT,vcn.people_fully_vaccinated)/dth.population)*100 as full_vac_pcnt
-From covid_analysis..coviddeaths dth
+FROM covid_analysis..coviddeaths dth
 JOIN covid_analysis..covidvaccinations vcn
 	ON dth.location =vcn.location
-	and dth.date = vcn.date
+	AND dth.date = vcn.date
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Examining Full Vaccination levels
@@ -221,11 +224,11 @@ FROM
             ,location
             ,date
             ,people_fully_vaccinated
-            ,COUNT(people_fully_vaccinated) OVER (PARTITION BY location ORDER BY date) as grouper
+            ,COUNT(people_fully_vaccinated) OVER (PARTITION BY location ORDER BY date) AS grouper
         FROM
             covidvaccinations
-    ) as grouped
-WHERE Continent is not null
+    ) AS grouped
+WHERE Continent IS NOT null
 ORDER BY location,date
 
 
@@ -247,8 +250,8 @@ FROM
             ,COUNT(people_fully_vaccinated) OVER (PARTITION BY location ORDER BY date) as grouper
         FROM
             covidvaccinations
-    ) as grouped
-WHERE Continent is null and location not like 'international'
+    ) AS grouped
+WHERE Continent IS null AND location NOT LIKE 'international'
 ORDER BY location,date
 
--This concludes the SQL Project
+-- This concludes the SQL Project
