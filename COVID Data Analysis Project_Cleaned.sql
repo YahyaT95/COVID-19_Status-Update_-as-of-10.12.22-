@@ -40,8 +40,7 @@ ORDER BY 3 ,4
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Creating a table to examine total cases vs total deaths 
---Viewing the likelihood of dying from covid
---note: variables for age and income were included for further analysis in Tableau
+--Viewing the likelihood of dying from COVID-19 in different countries
 
 --Code:
 --Create View deathlikelihoodbycountry as
