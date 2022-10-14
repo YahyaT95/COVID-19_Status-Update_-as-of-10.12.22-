@@ -206,22 +206,49 @@ JOIN covid_analysis..covidvaccinations vcn
 
 -- Due to full vacination variable values having null values between reporting, I performed a forward fill to populate the previous reported number unitl an update was reported
 
-CREATE View fully_vac as
+CODE:
+--CREATE View fully_vac_by_country as
 SELECT
-	continent,
-	location
+	continent
+	,location
     ,date
     ,people_fully_vaccinated
     ,MAX(people_fully_vaccinated) OVER (PARTITION BY location, grouper) as forward_filled_fully_vac
 FROM
     (
         SELECT
-			continent,
-            location
+			continent
+            ,location
             ,date
             ,people_fully_vaccinated
             ,COUNT(people_fully_vaccinated) OVER (PARTITION BY location ORDER BY date) as grouper
         FROM
             covidvaccinations
     ) as grouped
+WHERE Continent is not null
 ORDER BY location,date
+
+
+--CODE:
+--CREATE View fully_vac_by_noncountry as
+SELECT
+	continent
+	,location
+    ,date
+    ,people_fully_vaccinated
+    ,MAX(people_fully_vaccinated) OVER (PARTITION BY location, grouper) as forward_filled_fully_vac
+FROM
+    (
+        SELECT
+			continent
+            ,location
+            ,date
+            ,people_fully_vaccinated
+            ,COUNT(people_fully_vaccinated) OVER (PARTITION BY location ORDER BY date) as grouper
+        FROM
+            covidvaccinations
+    ) as grouped
+WHERE Continent is null and location not like 'international'
+ORDER BY location,date
+
+-This concludes the SQL Project
