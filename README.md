@@ -7,3 +7,5 @@ Linked in the portfolio are the following projects:
 1. A Data Dictionary on the variables in the data
 2. The three csv files used in the database 
 3. The SQL file for exploring, engineering and organizing the data
+
+Link to Tableau Dashboard: https://public.tableau.com/views/COVID-19AnalysisAsof10_12_22/COVID-19StatusUpdate-10_12_22?:language=en-US&:display_count=n&:origin=viz_share_link
